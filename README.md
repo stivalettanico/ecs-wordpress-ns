@@ -1,1 +1,1 @@
-# ecs-wordpress-ns
+# aws-ecs-wordpress-ns
