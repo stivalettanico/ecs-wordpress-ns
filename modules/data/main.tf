@@ -33,8 +33,8 @@ resource "aws_security_group" "db_sg" {
   vpc_id      = var.data_vpc_id
 
   ingress {
-    from_port        = var.database_port
-    to_port          = var.database_port
+    from_port        = var.db_port
+    to_port          = var.db_port
     protocol         = "tcp"
     cidr_blocks      = [var.vpc_cidr_range]
   }
@@ -67,13 +67,13 @@ resource "aws_db_subnet_group" "this" {
 ################################################################################
 resource "aws_db_instance" "this" {
   identifier              = "rds-instance-${var.project_name}${var.environment}-${var.region_substring}"
-  allocated_storage       = 20
-  db_name                 = "wordpress"
-  engine                  = "mysql"
-  engine_version          = "5.7"
-  instance_class          = "db.t3.micro"
-  username                = "admin"
-  password                = "supersecretpassword"
+  allocated_storage       = var.db_allocated_storage
+  db_name                 = var.db_name
+  engine                  = var.db_engine
+  engine_version          = var.db_engine_version
+  instance_class          = var.db_instance_class
+  username                = var.db_username
+  password                = var.db_password
   db_subnet_group_name    = aws_db_subnet_group.this.name
   vpc_security_group_ids  = [aws_security_group.db_sg.id]
   skip_final_snapshot     = true
@@ -127,7 +127,7 @@ resource "aws_security_group" "efs_sg" {
 }
 
 resource "aws_efs_mount_target" "this" {
-  count           = "${length(data.aws_subnets.private.ids)}"
+  count           = "${length(var.private_subnet_cidr_range)}"
   file_system_id  = aws_efs_file_system.this.id
   subnet_id       = "${element(data.aws_subnets.private.ids, count.index)}"
   security_groups = [aws_security_group.efs_sg.id]

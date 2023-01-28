@@ -28,7 +28,7 @@ variable "region_substring" {
   default     = ""
 }
 
-variable "database_port" {
+variable "db_port" {
   description = "This is the database port"
   type        = number
   default     = 0
@@ -40,7 +40,7 @@ variable "vpc_cidr_range" {
   default     = ""
 }
 
-variable "allocated_storage" {
+variable "db_allocated_storage" {
   description = ""
   type        = number
   default     = 0
@@ -52,32 +52,37 @@ variable "db_name" {
   default     = ""
 }
 
-variable "engine" {
+variable "db_engine" {
   description = ""
   type        = string
   default     = ""
 }
 
-variable "engine_version" {
+variable "db_engine_version" {
   description = ""
   type        = string
   default     = ""
 }
 
-variable "instance_class" {
+variable "db_instance_class" {
   description = ""
   type        = string
   default     = ""
 }
 
-variable "username" {
+variable "db_username" {
   description = ""
   type        = string
   default     = ""
 }
 
-variable "password" {
+variable "db_password" {
   description = ""
   type        = string
   default     = ""
+}
+
+variable "private_subnet_cidr_range" {
+  type    = list(string)
+  default = []
 }
