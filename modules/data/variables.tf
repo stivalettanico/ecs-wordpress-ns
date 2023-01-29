@@ -71,18 +71,46 @@ variable "db_instance_class" {
 }
 
 variable "db_username" {
-  description = ""
+  description = "Database username"
   type        = string
   default     = ""
+  sensitive   = true
 }
 
 variable "db_password" {
-  description = ""
+  description = "Database password"
   type        = string
   default     = ""
+  sensitive   = true
 }
 
 variable "private_subnet_cidr_range" {
+  description = ""
   type    = list(string)
   default = []
 }
+
+variable "efs_creation_token" {
+  description = ""
+  type    = string
+  default = ""
+}
+
+variable "efs_encrypted" {
+  description = ""
+  type    = bool
+  default = true
+}
+
+variable "efs_throughput_mode" {
+  description = ""
+  type    = string
+  default = ""
+}
+
+variable "efs_performance_mode" {
+  description = ""
+  type    = string
+  default = ""
+}
+

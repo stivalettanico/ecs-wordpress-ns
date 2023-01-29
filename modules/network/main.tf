@@ -29,10 +29,10 @@ resource "aws_vpc" "this" {
 # Private subnets
 ################################################################################
 resource "aws_subnet" "private" {
-  count                   = "${length(var.private_subnet_cidr_range)}"
-  vpc_id                  = "${aws_vpc.this.id}"
-  cidr_block              = "${var.private_subnet_cidr_range[count.index]}"
-  availability_zone       = "${local.azs.names[count.index]}"
+  count                   = length(var.private_subnet_cidr_range)
+  vpc_id                  = aws_vpc.this.id
+  cidr_block              = var.private_subnet_cidr_range[count.index]
+  availability_zone       = local.azs.names[count.index]
   map_public_ip_on_launch = false
 
   tags = merge(
@@ -48,10 +48,10 @@ resource "aws_subnet" "private" {
 # Public subnets
 ################################################################################
 resource "aws_subnet" "public" {
-  count                   = "${length(var.public_subnet_cidr_range)}"
-  vpc_id                  = "${aws_vpc.this.id}"
-  cidr_block              = "${var.public_subnet_cidr_range[count.index]}"
-  availability_zone       = "${local.azs.names[count.index]}"
+  count                   = length(var.public_subnet_cidr_range)
+  vpc_id                  = aws_vpc.this.id
+  cidr_block              = var.public_subnet_cidr_range[count.index]
+  availability_zone       = local.azs.names[count.index]
   map_public_ip_on_launch = true
 
   tags = merge(
@@ -111,9 +111,9 @@ resource "aws_eip" "this" {
 
 //Create a NAT gateway in each public subnet
 resource "aws_nat_gateway" "this" {
-  count           = "${length(var.public_subnet_cidr_range)}"
-  allocation_id   = "${element(aws_eip.this.*.id, count.index)}"
-  subnet_id       = "${element(aws_subnet.public.*.id, count.index)}"
+  count           = length(var.public_subnet_cidr_range)
+  allocation_id   = element(aws_eip.this.*.id, count.index)
+  subnet_id       = element(aws_subnet.public.*.id, count.index)
 
   tags = merge(
     {
@@ -127,14 +127,17 @@ resource "aws_nat_gateway" "this" {
   depends_on = [aws_internet_gateway.this]
 }
 
+
 //Associate the route table to the public subnets.
 resource "aws_route_table_association" "public" {
-  count           = "${length(var.public_subnet_cidr_range)}"
-  subnet_id       = "${element(aws_subnet.public.*.id, count.index)}"
-  route_table_id  = "${aws_route_table.public.id}"
+  count           = length(var.public_subnet_cidr_range)
+  subnet_id       = element(aws_subnet.public.*.id, count.index)
+  route_table_id  = aws_route_table.public.id
 }
 
-//NACL to be associated to the public internet
+################################################################################
+# NACL to be associated to the public subnets
+################################################################################
 resource "aws_network_acl" "public" {
   vpc_id = aws_vpc.this.id
 
@@ -164,20 +167,64 @@ resource "aws_network_acl" "public" {
   ) 
 }
 
+################################################################################
+# NACL to be associated to the private subnets
+################################################################################
+resource "aws_network_acl" "private" {
+  vpc_id = aws_vpc.this.id
+
+  egress {
+    protocol   = "tcp"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 65535
+  }
+
+  ingress {
+    protocol   = "tcp"
+    rule_no    = 100
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 65535
+  }
+
+  tags = merge(
+    {
+      "Name" = "nacl-${var.project_name}${var.environment}-${var.region_substring}-pri"
+    },
+    var.tags
+  ) 
+}
+
+################################################################################
+# NACL association with the pubic subnets
+################################################################################
 resource "aws_network_acl_association" "public" {
-  count           = "${length(var.public_subnet_cidr_range)}"
+  count           = length(var.public_subnet_cidr_range)
   network_acl_id  = aws_network_acl.public.id
-  subnet_id       = "${element(aws_subnet.public.*.id, count.index)}"
+  subnet_id       = element(aws_subnet.public.*.id, count.index)
+}
+
+################################################################################
+# NACL association with the private subnets
+################################################################################
+resource "aws_network_acl_association" "private" {
+  count           = length(var.private_subnet_cidr_range)
+  network_acl_id  = aws_network_acl.private.id
+  subnet_id       = element(aws_subnet.private.*.id, count.index)
 }
 
 //Create a private route table to be associated with private subnets. Calls will be send to the NAT gateway
 resource "aws_route_table" "private" {
-  count  = "${length(var.private_subnet_cidr_range)}"
+  count  = length(var.private_subnet_cidr_range)
   vpc_id = aws_vpc.this.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = "${element(aws_nat_gateway.this.*.id, count.index)}"
+    nat_gateway_id = element(aws_nat_gateway.this.*.id, count.index)
   }
 
   tags = merge(
@@ -188,15 +235,28 @@ resource "aws_route_table" "private" {
   ) 
 }
 
+# resource "aws_route_table" "private" {
+#   for_each =  toset(aws_nat_gateway.this.*.id)
+#   vpc_id = aws_vpc.this.id
+
+#   route {
+#       cidr_block     = "0.0.0.0/0"
+#       nat_gateway_id = each.key
+#   }
+# }
+
+
 resource "aws_route_table_association" "private" {
-  count           = "${length(var.private_subnet_cidr_range)}"
-  subnet_id       = "${element(aws_subnet.private.*.id, count.index)}"
-  route_table_id  = "${element(aws_route_table.private.*.id, count.index)}"
+  count           = length(var.private_subnet_cidr_range)
+  subnet_id       = element(aws_subnet.private.*.id, count.index)
+  route_table_id  = element(aws_route_table.private.*.id, count.index)
 }
 
-//This is the ALB security group
+################################################################################
+# This is the ALB security group
+################################################################################
 resource "aws_security_group" "alb_sg" {
-  name        = "allow_http"
+  name        = "ALB_Security_Group"
   description = "Allow HTTP inbound traffic"
   vpc_id      = aws_vpc.this.id
 

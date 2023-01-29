@@ -1,0 +1,57 @@
+[    
+    {
+        "portMappings": [
+            {
+                "containerPort": 8080,
+                "protocol": "tcp"
+            }
+        ],
+        "essential": true,
+        "mountPoints": [
+            {
+                "containerPath": "/bitnami/wordpress",
+                "sourceVolume": "wordpress"
+            }
+        ],
+        "name": "wordpress",
+        "image": "bitnami/wordpress",
+        "logConfiguration": {
+            "logDriver": "awslogs",
+            "options": {
+               "awslogs-group" : "${CW_GROUP}",
+               "awslogs-region": "${REGION}",
+               "awslogs-stream-prefix": "ecs"
+            }
+         },
+        "environment": [
+            {
+                "name": "MARIADB_HOST",
+                "value": "${WOF_RDS_ENDPOINT}"
+            },
+            {   
+                "name": "WORDPRESS_DATABASE_USER",
+                "value": "${DB_USERNAME}"
+            },
+            {   
+                "name": "WORDPRESS_DATABASE_PASSWORD",
+                "value": "${DB_PASSWORD}"
+            },
+            {   
+                "name": "WORDPRESS_DATABASE_NAME",
+                "value": "wordpress"
+            },
+            {   
+                "name": "PHP_MEMORY_LIMIT",
+                "value": "512M"
+            },
+            {   
+                "name": "enabled",
+                "value": "false"
+            },
+            {   
+                "name": "ALLOW_EMPTY_PASSWORD",
+                "value": "no"
+            }
+        ]
+}
+]

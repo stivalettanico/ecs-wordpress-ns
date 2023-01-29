@@ -28,7 +28,7 @@ locals {
 # This is the RDS security group
 ################################################################################
 resource "aws_security_group" "db_sg" {
-  name        = "allow_rds_communication"
+  name        = "RDS_Security_Group"
   description = "RDS Security Group"
   vpc_id      = var.data_vpc_id
 
@@ -52,7 +52,7 @@ resource "aws_security_group" "db_sg" {
 ################################################################################
 resource "aws_db_subnet_group" "this" {
   name        = "rds-groups-${var.project_name}${var.environment}-${var.region_substring}"
-  subnet_ids  = "${data.aws_subnets.private.ids}"
+  subnet_ids  = data.aws_subnets.private.ids
   description = "RDS private subnet groups"
   tags = merge(
     {
@@ -90,14 +90,14 @@ resource "aws_db_instance" "this" {
 # EFS
 ################################################################################
 resource "aws_efs_file_system" "this" {
-  creation_token    =  "my-product"
-  encrypted         = true
-  throughput_mode   = "bursting"
-  performance_mode  = "generalPurpose"   
+  creation_token    = var.efs_creation_token
+  encrypted         = var.efs_encrypted
+  throughput_mode   = var.efs_throughput_mode
+  performance_mode  = var.efs_performance_mode   
 
   tags = merge(
     {
-      "Name" = "EFS-${var.project_name}${var.environment}-${var.region_substring}"
+      "Name" = "efs-${var.project_name}${var.environment}-${var.region_substring}"
     },
     var.tags
   ) 
@@ -107,7 +107,7 @@ resource "aws_efs_file_system" "this" {
 # This is the EFS security group
 ################################################################################
 resource "aws_security_group" "efs_sg" {
-  name        = "allow_efs_communication"
+  name        = "EFS_Security_Group"
   description = "EFS Security Group"
   vpc_id      = var.data_vpc_id
 
@@ -126,9 +126,33 @@ resource "aws_security_group" "efs_sg" {
   ) 
 }
 
+################################################################################
+# This is the EFS mount target
+################################################################################
 resource "aws_efs_mount_target" "this" {
-  count           = "${length(var.private_subnet_cidr_range)}"
+  count           = length(var.private_subnet_cidr_range)
   file_system_id  = aws_efs_file_system.this.id
-  subnet_id       = "${element(data.aws_subnets.private.ids, count.index)}"
+  subnet_id       = element(data.aws_subnets.private.ids, count.index)
   security_groups = [aws_security_group.efs_sg.id]
+}
+
+
+################################################################################
+# This is the EFS access point
+################################################################################
+resource "aws_efs_access_point" "this" {
+  file_system_id = aws_efs_file_system.this.id
+  posix_user {
+    gid = "1000"
+    uid = "1000"
+  }
+  root_directory {
+    creation_info {
+      owner_gid = "1000"
+      owner_uid = "1000"
+      permissions = "0777"
+
+    }
+    path = "/bitnami"
+  }
 }

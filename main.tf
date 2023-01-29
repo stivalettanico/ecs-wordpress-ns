@@ -14,6 +14,10 @@ variable db_engine_version {}
 variable db_instance_class {}
 variable db_username {}
 variable db_password {}
+variable efs_creation_token {}
+variable efs_encrypted {}
+variable efs_throughput_mode {}
+variable efs_performance_mode {}
 
 
 data "aws_region" "current" {}
@@ -31,16 +35,8 @@ locals {
   }
 }
 
-# ECS CLUSTER
-/*module "ecs-cluster" {
-  source = "./modules/ecs-cluster"
-  depends_on = [module.network]
 
-  environment = local.environment
-
-  tags = local.tags
-}*/
-
+//Network module
 module "network" {
   source = "./modules/network"
 
@@ -57,10 +53,12 @@ module "network" {
 
 }
 
+//Data module
 module "data" {
   source = "./modules/data"
   depends_on = [module.network]
 
+  //DATABASE
   tags                      = local.tags
   region_substring          = local.region_substring
   data_vpc_id               = module.network.vpc_id
@@ -75,5 +73,31 @@ module "data" {
   db_username               = var.db_username
   db_password               = var.db_password
   private_subnet_cidr_range = var.private_subnet_cidr_range
+
+  //EFS
+  efs_creation_token        = var.efs_creation_token
+  efs_encrypted             = var.efs_encrypted
+  efs_throughput_mode       = var.efs_throughput_mode
+  efs_performance_mode      = var.efs_performance_mode  
   
+}
+
+// ECS CLUSTER
+module "ecs-cluster" {
+  source = "./modules/ecs-cluster"
+  depends_on = [module.network, module.data]
+
+  environment       = local.environment
+  efs_id            = module.data.efs_id
+  efs_ap_id         = module.data.efs_ap_id
+  db_hostname       = module.data.db_hostname
+  db_username       = var.db_username
+  db_password       = var.db_password
+  project_name      = var.project_name 
+  vpc_id            = module.network.vpc_id
+  region_substring  = local.region_substring
+  alb_sg_id         = module.network.alb_sg_id
+  alb_id            = module.network.alb_id
+
+  tags = local.tags
 }
