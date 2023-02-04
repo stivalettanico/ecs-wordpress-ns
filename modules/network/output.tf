@@ -13,6 +13,11 @@ output "alb_id" {
   value       = try(aws_lb.this.id)
 }
 
+output "target_group_arn" {
+  description = "The arn of the target group associated to the ALB"
+  value       = try(aws_lb_target_group.this.arn)
+}
+
 
 
 

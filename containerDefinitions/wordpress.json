@@ -2,19 +2,19 @@
     {
         "portMappings": [
             {
-                "containerPort": 8080,
+                "containerPort": ${CONTAINER_PORT},
                 "protocol": "tcp"
             }
         ],
         "essential": true,
         "mountPoints": [
             {
-                "containerPath": "/bitnami/wordpress",
-                "sourceVolume": "wordpress"
+                "containerPath": "${CONTAINER_PATH}",
+                "sourceVolume": "${VOLUME_NAME}"
             }
         ],
-        "name": "wordpress",
-        "image": "bitnami/wordpress",
+        "name": "${CONTAINER_NAME}",
+        "image": "${IMAGE_NAME}",
         "logConfiguration": {
             "logDriver": "awslogs",
             "options": {
@@ -38,7 +38,7 @@
             },
             {   
                 "name": "WORDPRESS_DATABASE_NAME",
-                "value": "wordpress"
+                "value": "${DB_NAME}"
             },
             {   
                 "name": "PHP_MEMORY_LIMIT",
@@ -53,5 +53,5 @@
                 "value": "no"
             }
         ]
-}
+    }
 ]

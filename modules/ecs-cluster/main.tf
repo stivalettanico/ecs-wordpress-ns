@@ -21,6 +21,12 @@ data "template_file" "task_definition" {
     DB_PASSWORD      = var.db_password
     CW_GROUP         = aws_cloudwatch_log_group.wordpress_taskdefinition_cw.name
     REGION           = data.aws_region.current.name
+    CONTAINER_NAME   = var.container_name 
+    VOLUME_NAME      = var.volume_name 
+    CONTAINER_PORT   = var.container_port
+    IMAGE_NAME       = var.image_name
+    CONTAINER_PATH   = var.container_path 
+    DB_NAME          = var.db_name
   }
 }
 
@@ -33,10 +39,9 @@ resource "aws_cloudwatch_log_group" "wordpress_taskdefinition_cw" {
 
   tags = merge(
     { 
-      "Name" = "cw-ecs-${var.environment}-${local.region_substring}"
+      "Name" = "cw-ecs-${var.project_name}-${var.environment}-${var.region_substring}"
     }, 
-    var.tags
-    )
+  )
 }
 
 ################################################################################
@@ -68,20 +73,14 @@ resource "aws_iam_role" "wordpress_taskdefinition_role" {
     { 
       "Name" = "wordpress_taskdefinition_role" 
     }, 
-    var.tags
-    )
-}
-
-locals {
-  region           = data.aws_region.current.name
-  region_substring = lower(format("%s%s%s", substr(local.region, 0, 2), substr(local.region, 3, 1), substr(local.region, -1, 1)))
+  )
 }
 
 ################################################################################
 # This is the ECS cluster
 ################################################################################
 resource "aws_ecs_cluster" "this" {
-  name = "ecs-cluster-${var.environment}-${local.region_substring}"
+  name = "ecs-cluster-${var.project_name}-${var.environment}-${var.region_substring}"
 
   setting {
     name  = "containerInsights"
@@ -90,9 +89,8 @@ resource "aws_ecs_cluster" "this" {
 
   tags = merge(
     {
-      "Name" = "ecs-cluster-${var.environment}-${local.region_substring}"
-    },
-    var.tags
+      "Name" = "ecs-cluster-${var.project_name}-${var.environment}-${var.region_substring}"
+    }
   )
 }
 
@@ -123,7 +121,7 @@ resource "aws_ecs_task_definition" "wordpress_taskdefinition" {
   memory                   = 1024
   execution_role_arn       = aws_iam_role.wordpress_taskdefinition_role.arn
   volume {
-    name = "wordpress"
+    name = var.volume_name
     efs_volume_configuration {
       file_system_id     = var.efs_id
       transit_encryption = "ENABLED"
@@ -137,9 +135,8 @@ resource "aws_ecs_task_definition" "wordpress_taskdefinition" {
 
   tags = merge(
     {
-      "Name" = "ecs-task-definition-${var.environment}-${local.region_substring}"
-    },
-    var.tags
+      "Name" = "ecs-task-definition-${var.project_name}-${var.environment}-${var.region_substring}"
+    }
   )
 }
 
@@ -152,8 +149,8 @@ resource "aws_security_group" "ecs_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port        = 8080
-    to_port          = 8080
+    from_port        = var.container_port 
+    to_port          = var.container_port 
     protocol         = "tcp"
     security_groups  = [var.alb_sg_id]
   }
@@ -181,9 +178,8 @@ resource "aws_security_group" "ecs_sg" {
 
   tags = merge(
     {
-      "Name" = "ecs-sg-${var.project_name}${var.environment}-${var.region_substring}"
+      "Name" = "ecs-sg-${var.project_name}-${var.environment}-${var.region_substring}"
     },
-    var.tags
   ) 
 }
 
@@ -193,8 +189,8 @@ resource "aws_security_group" "ecs_sg" {
 ################################################################################
 resource "aws_security_group_rule" "alb_to_ecs" {
   type                        = "egress"
-  from_port                   = 8080
-  to_port                     = 8080
+  from_port                   = var.container_port 
+  to_port                     = var.container_port 
   protocol                    = "tcp"
   source_security_group_id    = aws_security_group.ecs_sg.id
   security_group_id           = var.alb_sg_id
@@ -209,25 +205,24 @@ resource "aws_ecs_service" "wordpress_service" {
   cluster                           = aws_ecs_cluster.this.arn
   task_definition                   = aws_ecs_task_definition.wordpress_taskdefinition.arn
   health_check_grace_period_seconds = 60
-  desired_count                     = 2
+  desired_count                     = var.task_number
   enable_ecs_managed_tags           = true
   propagate_tags                    = "SERVICE"
   platform_version                  = "1.4.0"
   force_new_deployment              = true
   launch_type                       = "FARGATE"
+  
   deployment_controller {
     type = "ECS"
   }
   load_balancer {
-    target_group_arn = "arn:aws:elasticloadbalancing:eu-west-2:114085016447:targetgroup/tg-wordpress-dev-euw2/3acf03285202e245"
-    container_name   = "wordpress"
-    container_port   = 8080
+    target_group_arn = var.target_group_arn
+    container_name   = var.container_name
+    container_port   = var.container_port 
   }
   network_configuration {
     subnets          = data.aws_subnets.app.ids
     assign_public_ip = false
     security_groups  = [aws_security_group.ecs_sg.id]
   }
-
-  tags = var.tags
 }

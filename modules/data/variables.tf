@@ -114,3 +114,11 @@ variable "efs_performance_mode" {
   default = ""
 }
 
+variable "efs_path" {
+  description = "The EFS path"
+  type    = string
+  default = ""
+}
+
+ 
+

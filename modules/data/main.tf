@@ -39,12 +39,10 @@ resource "aws_security_group" "db_sg" {
     cidr_blocks      = [var.vpc_cidr_range]
   }
 
-  tags = merge(
-    {
-      "Name" = "rds-sg-${var.project_name}${var.environment}-${var.region_substring}"
-    },
-    var.tags
-  ) 
+  tags = {
+      "Name" = "rds-sg-${var.project_name}-${var.environment}-${var.region_substring}"
+  }
+
 }
 
 ################################################################################
@@ -54,12 +52,10 @@ resource "aws_db_subnet_group" "this" {
   name        = "rds-groups-${var.project_name}${var.environment}-${var.region_substring}"
   subnet_ids  = data.aws_subnets.private.ids
   description = "RDS private subnet groups"
-  tags = merge(
-    {
-      "Name" = "rds-groups-${var.project_name}${var.environment}-${var.region_substring}"
-    },
-    var.tags
-  ) 
+  tags = {
+      "Name" = "rds-groups-${var.project_name}-${var.environment}-${var.region_substring}"
+  }
+
 }
 
 ################################################################################
@@ -78,12 +74,10 @@ resource "aws_db_instance" "this" {
   vpc_security_group_ids  = [aws_security_group.db_sg.id]
   skip_final_snapshot     = true
 
-  tags = merge(
-    {
-      "Name" = "rds-instance-${var.project_name}${var.environment}-${var.region_substring}"
-    },
-    var.tags
-  ) 
+  tags = {
+      "Name" = "rds-instance-${var.project_name}-${var.environment}-${var.region_substring}"
+  }
+
 }
 
 ################################################################################
@@ -95,12 +89,10 @@ resource "aws_efs_file_system" "this" {
   throughput_mode   = var.efs_throughput_mode
   performance_mode  = var.efs_performance_mode   
 
-  tags = merge(
-    {
-      "Name" = "efs-${var.project_name}${var.environment}-${var.region_substring}"
-    },
-    var.tags
-  ) 
+  tags = {
+      "Name" = "efs-${var.project_name}-${var.environment}-${var.region_substring}"
+  } 
+
 }
 
 ################################################################################
@@ -118,12 +110,10 @@ resource "aws_security_group" "efs_sg" {
     cidr_blocks      = [var.vpc_cidr_range]
   }
 
-  tags = merge(
-    {
-      "Name" = "efs-sg-${var.project_name}${var.environment}-${var.region_substring}"
-    },
-    var.tags
-  ) 
+  tags = {
+      "Name" = "efs-sg-${var.project_name}-${var.environment}-${var.region_substring}"
+  }
+  
 }
 
 ################################################################################
@@ -153,6 +143,6 @@ resource "aws_efs_access_point" "this" {
       permissions = "0777"
 
     }
-    path = "/bitnami"
+    path = var.efs_path
   }
 }

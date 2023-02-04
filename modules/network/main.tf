@@ -16,12 +16,9 @@ resource "aws_vpc" "this" {
   enable_dns_support = true
   enable_dns_hostnames = true  
 
-  tags = merge(
-    {
-      "Name" = "vpc-${var.project_name}${var.environment}-${var.region_substring}"
-    },
-    var.tags
-  )
+  tags = {
+    "Name" = "vpc-${var.project_name}-${var.environment}-${var.region_substring}"
+    }
 }
 
 
@@ -37,10 +34,9 @@ resource "aws_subnet" "private" {
 
   tags = merge(
     {
-      "Name" = "subnet-${var.project_name}${var.environment}-${local.azs.names[count.index]}-priv"
+      "Name" = "subnet-${var.project_name}-${var.environment}-${local.azs.names[count.index]}-priv"
       "Type" = "Private"
-    },
-    var.tags
+    }
   )  
 }
 
@@ -56,10 +52,9 @@ resource "aws_subnet" "public" {
 
   tags = merge(
     {
-      "Name" = "subnet-${var.project_name}${var.environment}-${local.azs.names[count.index]}-pub"
+      "Name" = "subnet-${var.project_name}-${var.environment}-${local.azs.names[count.index]}-pub"
       "Type" = "Public"
-    },
-    var.tags
+    }
   )  
 }
 
@@ -71,9 +66,8 @@ resource "aws_internet_gateway" "this" {
 
   tags = merge(
     {
-      "Name" = "igw-${var.project_name}${var.environment}-${var.region_substring}"
-    },
-    var.tags
+      "Name" = "igw-${var.project_name}-${var.environment}-${var.region_substring}"
+    }
   ) 
 }
 
@@ -90,26 +84,28 @@ resource "aws_route_table" "public" {
 
   tags = merge(
     {
-      "Name" = "rt-${var.project_name}${var.environment}-${var.region_substring}-pub"
-    },
-    var.tags
+      "Name" = "rt-${var.project_name}-${var.environment}-${var.region_substring}-pub"
+    }
   ) 
 }
 
-//Create elastic IP addresses to be associated with the NAT. We create one EIP for each public subnet to implement HA.
+################################################################################
+# Create elastic IP addresses to be associated with the NAT. We create one EIP for each public subnet to implement HA.
+################################################################################
 resource "aws_eip" "this" {
   count = "${length(var.public_subnet_cidr_range)}"
   vpc   = true
 
   tags = merge(
     {
-      "Name" = "eip-${var.project_name}${var.environment}-${var.region_substring}-${local.azs.names[count.index]}"
-    },
-    var.tags
+      "Name" = "eip-${var.project_name}-${var.environment}-${var.region_substring}-${local.azs.names[count.index]}"
+    }
   ) 
 }
 
-//Create a NAT gateway in each public subnet
+################################################################################
+# Create a NAT gateway in each public subnet
+################################################################################
 resource "aws_nat_gateway" "this" {
   count           = length(var.public_subnet_cidr_range)
   allocation_id   = element(aws_eip.this.*.id, count.index)
@@ -117,9 +113,8 @@ resource "aws_nat_gateway" "this" {
 
   tags = merge(
     {
-      "Name" = "nat-${var.project_name}${var.environment}-${local.azs.names[count.index]}"
-    },
-    var.tags
+      "Name" = "nat-${var.project_name}-${var.environment}-${local.azs.names[count.index]}"
+    }
   ) 
 
   # To ensure proper ordering, it is recommended to add an explicit dependency
@@ -128,11 +123,22 @@ resource "aws_nat_gateway" "this" {
 }
 
 
-//Associate the route table to the public subnets.
+################################################################################
+# Associate the route table to the public subnets.
+################################################################################
 resource "aws_route_table_association" "public" {
   count           = length(var.public_subnet_cidr_range)
   subnet_id       = element(aws_subnet.public.*.id, count.index)
   route_table_id  = aws_route_table.public.id
+}
+
+################################################################################
+# Associate the route table to the private subnets.
+################################################################################
+resource "aws_route_table_association" "private" {
+  count           = length(var.private_subnet_cidr_range)
+  subnet_id       = element(aws_subnet.private.*.id, count.index)
+  route_table_id  = element(aws_route_table.private.*.id, count.index)
 }
 
 ################################################################################
@@ -161,9 +167,8 @@ resource "aws_network_acl" "public" {
 
   tags = merge(
     {
-      "Name" = "nacl-${var.project_name}${var.environment}-${var.region_substring}-pub"
-    },
-    var.tags
+      "Name" = "nacl-${var.project_name}-${var.environment}-${var.region_substring}-pub"
+    }
   ) 
 }
 
@@ -193,9 +198,8 @@ resource "aws_network_acl" "private" {
 
   tags = merge(
     {
-      "Name" = "nacl-${var.project_name}${var.environment}-${var.region_substring}-pri"
-    },
-    var.tags
+      "Name" = "nacl-${var.project_name}-${var.environment}-${var.region_substring}-pri"
+    }
   ) 
 }
 
@@ -217,7 +221,10 @@ resource "aws_network_acl_association" "private" {
   subnet_id       = element(aws_subnet.private.*.id, count.index)
 }
 
-//Create a private route table to be associated with private subnets. Calls will be send to the NAT gateway
+
+################################################################################
+# Create a private route table to be associated with private subnets. Calls will be send to the NAT gateway
+################################################################################
 resource "aws_route_table" "private" {
   count  = length(var.private_subnet_cidr_range)
   vpc_id = aws_vpc.this.id
@@ -229,9 +236,8 @@ resource "aws_route_table" "private" {
 
   tags = merge(
     {
-      "Name" = "rt-${var.project_name}${var.environment}-${var.region_substring}-priv-${count.index}"
-    },
-    var.tags
+      "Name" = "rt-${var.project_name}-${var.environment}-${var.region_substring}-priv-${count.index}"
+    }
   ) 
 }
 
@@ -244,13 +250,6 @@ resource "aws_route_table" "private" {
 #       nat_gateway_id = each.key
 #   }
 # }
-
-
-resource "aws_route_table_association" "private" {
-  count           = length(var.private_subnet_cidr_range)
-  subnet_id       = element(aws_subnet.private.*.id, count.index)
-  route_table_id  = element(aws_route_table.private.*.id, count.index)
-}
 
 ################################################################################
 # This is the ALB security group
@@ -269,30 +268,32 @@ resource "aws_security_group" "alb_sg" {
 
   tags = merge(
     {
-      "Name" = "alb-sg-${var.project_name}${var.environment}-${var.region_substring}"
-    },
-    var.tags
+      "Name" = "alb-sg-${var.project_name}-${var.environment}-${var.region_substring}"
+    }
   ) 
 }
 
-//This is the internet facing load balancer.
+################################################################################
+# This is the internet facing load balancer.
+################################################################################
 resource "aws_lb" "this" {
-  name               = "alb-${var.project_name}${var.environment}-${var.region_substring}"
+  name               = "alb-${var.project_name}-${var.environment}-${var.region_substring}"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
   subnets            = [for subnet in aws_subnet.public : subnet.id]
 
   tags = merge(
     {
-      "Name" = "alb-${var.project_name}${var.environment}-${var.region_substring}"
-    },
-    var.tags
+      "Name" = "alb-${var.project_name}-${var.environment}-${var.region_substring}"
+    }
   ) 
 }
 
-//ALB target group
+################################################################################
+# ALB target group
+################################################################################
 resource "aws_lb_target_group" "this" {
-  name        = "tg-${var.project_name}${var.environment}-${var.region_substring}"
+  name        = "tg-${var.project_name}-${var.environment}-${var.region_substring}"
   vpc_id      = aws_vpc.this.id
   port        = var.alb_port
   protocol    = var.alb_protocol
@@ -303,12 +304,14 @@ resource "aws_lb_target_group" "this" {
 
   tags = merge(
     {
-      "Name" = "tg-${var.project_name}${var.environment}-${var.region_substring}"
-    },
-    var.tags
+      "Name" = "tg-${var.project_name}-${var.environment}-${var.region_substring}"
+    }
   ) 
 }
 
+################################################################################
+# ALB listener
+################################################################################
 resource "aws_lb_listener" "this" {
   load_balancer_arn = aws_lb.this.arn
   port              = var.alb_port
