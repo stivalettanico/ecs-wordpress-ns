@@ -21,13 +21,15 @@ The architecture is based on the one provided by AWS in the article mentioned ab
 
 ![image](https://user-images.githubusercontent.com/102290995/219600285-dfd87ad3-a5f5-4776-9aac-fca051757e10.png)
 
-The main different between the my Terraform project and the one provided by AWS is that the user can choose how many subnets that can be created. The application is a classic 3 tiers application:
-1. Frontend: This is the public facing subnets, here we have the public facing ALB
-2. Backend: This layer hosts the ECS servers and it is a private subnet
-3. Database: This is the database layer that is also private.
+The main different between my Terraform project and the one provided by AWS is that it's possible to choose how many subnets that can be created. This can be possible by using a set of variables. 
+The application is a classic 3 tiers application where:
+1. The Frontend layer contains the public subnets, and it is where the internet facing ALB is deployed.
+2. The Appliction layer is where the ECS cluster and an EFS driver are located.
+3. The Database layer is the RDS instance is deployed.
 
-For this specific demo for semplicity I kept things simple; both the ECS cluster and the DB share the same private subnets. 
+For this specific demo for semplicity I kept things simple since both the ECS cluster and the DB share the same private subnets. 
 In a production environment, ECS and DB should be deployed in a dedicated and separate subnets and NACL in place, this is required in order to adhere to the principals of zero trust and AWS well architected framework. 
+In terms of the HA, we have a single RDS instance. In a production environment is strongly advised to deploy the DB in multiple AZs and ideally, one or more read only copy, so that the load can be evenly distributed.
 
 
 
