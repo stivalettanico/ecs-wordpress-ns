@@ -17,7 +17,13 @@ I followed the guide, made some changes here and there and I had a fully working
 Recently I decided redpedloy the application again, but rather than using Cloudformation I decided to refactor everything to Terraform. I know, I could have used some tools or even the "famous" ChatGPT to assist me in this journey, but since my main objective was to use improve my Terraform skills, I decided to do it manually.
 
 # Architecture
+The architecture is based on the one provided by AWS in the article mentioned above. Please find below a picture that I took from the blog post.
 ![image](https://user-images.githubusercontent.com/102290995/219600285-dfd87ad3-a5f5-4776-9aac-fca051757e10.png)
+
+The main different between the my Terraform project and the one provided by AWS is that the user can choose how many subnets that can be created. The application is a classic 3 tiers application:
+1. Frontend: This is the public facing subnets, here we have the public facing ALB
+2. Backend: This layer hosts the ECS servers and it is a private subnet
+3. Database: This is the database layer that is also private.
 
 
 
