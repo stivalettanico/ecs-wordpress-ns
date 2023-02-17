@@ -26,6 +26,9 @@ The main different between the my Terraform project and the one provided by AWS 
 2. Backend: This layer hosts the ECS servers and it is a private subnet
 3. Database: This is the database layer that is also private.
 
+For this specific demo for semplicity I kept things simple; both the ECS cluster and the DB share the same private subnets. 
+In a production environment, ECS and DB should be deployed in a dedicated and separate subnets and NACL in place, this is required in order to adhere to the principals of zero trust and AWS well architected framework. 
+
 
 
 
