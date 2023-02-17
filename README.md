@@ -18,6 +18,7 @@ Recently I decided redpedloy the application again, but rather than using Cloudf
 
 # Architecture
 The architecture is based on the one provided by AWS in the article mentioned above. Please find below a picture that I took from the blog post.
+
 ![image](https://user-images.githubusercontent.com/102290995/219600285-dfd87ad3-a5f5-4776-9aac-fca051757e10.png)
 
 The main different between the my Terraform project and the one provided by AWS is that the user can choose how many subnets that can be created. The application is a classic 3 tiers application:
