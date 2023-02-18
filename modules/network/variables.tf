@@ -5,11 +5,13 @@ variable "vpc_cidr_range" {
 }
 
 variable "public_subnet_cidr_range" {
+  description = "This is the CIDR range associated to the public subnets"
   type    = list(string)
   default = []
 }
 
 variable "private_subnet_cidr_range" {
+  description = "This is the CIDR range associated to the private subnets"
   type    = list(string)
   default = []
 }

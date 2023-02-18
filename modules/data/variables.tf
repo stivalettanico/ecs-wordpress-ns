@@ -41,31 +41,31 @@ variable "vpc_cidr_range" {
 }
 
 variable "db_allocated_storage" {
-  description = ""
+  description = "The storage to be allocated for the RDS database"
   type        = number
   default     = 0
 }
 
 variable "db_name" {
-  description = ""
+  description = "The database name"
   type        = string
   default     = ""
 }
 
 variable "db_engine" {
-  description = ""
+  description = "The database engine"
   type        = string
   default     = ""
 }
 
 variable "db_engine_version" {
-  description = ""
+  description = "The database engine version"
   type        = string
   default     = ""
 }
 
 variable "db_instance_class" {
-  description = ""
+  description = "The database instance class"
   type        = string
   default     = ""
 }
@@ -85,7 +85,7 @@ variable "db_password" {
 }
 
 variable "private_subnet_cidr_range" {
-  description = ""
+  description = "The CIDR range to be associated to the private subnets"
   type    = list(string)
   default = []
 }
@@ -97,25 +97,25 @@ variable "efs_creation_token" {
 }
 
 variable "efs_encrypted" {
-  description = ""
+  description = "EFS encryption: true or false"
   type    = bool
   default = true
 }
 
 variable "efs_throughput_mode" {
-  description = ""
+  description = "EFS throughtput mode"
   type    = string
   default = ""
 }
 
 variable "efs_performance_mode" {
-  description = ""
+  description = "EFS performance mode"
   type    = string
   default = ""
 }
 
 variable "efs_path" {
-  description = "The EFS path"
+  description = "The EFS path to be used by the container"
   type    = string
   default = ""
 }
