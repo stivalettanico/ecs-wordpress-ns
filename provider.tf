@@ -1,4 +1,5 @@
 provider "aws" {
+
   region = var.aws_target_region
 
   assume_role {
@@ -12,4 +13,5 @@ provider "aws" {
       ManagedBy   = "terraform"
     }
   }
+  
 }
