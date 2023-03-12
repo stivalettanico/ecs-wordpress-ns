@@ -97,6 +97,18 @@ $ terraform plan -var-file=./environments/dev/terraform.dev.tfvars
 $ terraform apply -var-file=./environments/dev/terraform.dev.tfvars
 ```
 
+## Access the Wordpress application
+After terraform has completed, the Wordpress application can be access at the following url:
+
+http://alb-wordpress-dev-euw2-<ACCOUNT>.eu-west-2.elb.amazonaws.com/wp-admin/
+
+Please note that these are the default credentials and should be changed.
+  
+Username: user
+Password: bitnami
+
+
+
 # Terraform structure
 
 
