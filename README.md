@@ -1,7 +1,7 @@
 # Deploy wordpress into ECS Fargate with Terraform
-The idea behind this project came from the need to build a simple Wordpress application in just few simple steps, without the need to manage how much capacity in terms of computation I needed, and ideally by using microservices.
+The idea behind this project came from the need to build a simple Wordpress application in just few simple steps without the need to manage how much capacity in terms of computation I needed and ideally, by using microservices.
 
-At that time, I was already familiar with AWS, I was also studying to get my first AWS certificate but I never had the chance to work with microservices. So I sayd to myself, why don't you build a simple website by using ECS? 
+At that time when I started this mini project I was already familiar with AWS, adn I was also studying to get my first AWS certificate but I never had the chance to work with microservices. So I sayd to myself, why don't you build a simple Wordpress application by using ECS? 
 
 Amazon ECS is a fully managed container orchestration service that makes it easy for you to deploy, manage, and scale containerized applications. 
 For more info:
@@ -13,9 +13,9 @@ I started doing my researches and came up with a very interesting article from A
 https://aws.amazon.com/blogs/containers/running-wordpress-amazon-ecs-fargate-ecs/
 
 So I though, here we are! job done, 
-I followed the guide, made some changes here and there, and I had a fully working Wordpress website deployed in AWS. Simply Amazing!!
+I followed the guide, made some changes, and I had a fully working Wordpress website deployed in AWS. AWSome!!
 
-Recently I decided redpedloy the application again, but rather than using Cloudformation I decided to refactor everything to Terraform. I know, I could have used some tools or even the "famous" ChatGPT to assist me in this journey, but since my main objective was to use improve my Terraform skills, I decided to do it manually step by step.
+Recently I decided redepedloy the application again, but rather than using Cloudformation I decided to refactor everything to Terraform. I know, I could have used some tools or even the "famous" ChatGPT to assist me in this journey, but since my main objective was to use improve my Terraform skills, I decided to do it manually step by step.
 
 # Architecture
 The architecture is based on the one provided by AWS in the article mentioned above. Please find below a picture that I took from the blog post.
@@ -37,8 +37,8 @@ In terms of the HA, we have a single RDS instance. In a production environment i
 ## Run terraform command with var-file
 
 Before executing the Terraform file, please perform below two actions
-1. Create an IAM role to be used by terraform. The IAM role must contain the required permission in order to create the artefacts. Please update the IAM role in the tfvar file (aws_role)
-2. Create an S3 bucket that will contain the terraform state. The S3 bucket configuration can be found in the "terraform-config.tf" file
+1. Create an IAM role to be used by Terraform. The IAM role must contain the required permission in order to create the artefacts. Please update the IAM role in the tfvar file (aws_role)
+2. Create an S3 bucket that will contain the Terraform state. The S3 bucket configuration can be found in the "terraform-config.tf" file
 3. Create a file with the required variables. Please note; it is higly reccomanded to create a tfvars file for each environment. In the below example I am adding a tfvar file only for the DEV environment.
 
 ```bash
@@ -98,7 +98,7 @@ $ terraform apply -var-file=./environments/dev/terraform.dev.tfvars
 ```
 
 ## Access the Wordpress application
-After terraform has completed, the Wordpress application can be access at the following url:
+After Terraform has completed, the Wordpress application can be access at the following url:
 
 http://ALB/wp-admin/
   
