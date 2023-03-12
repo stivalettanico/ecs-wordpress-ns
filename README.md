@@ -39,8 +39,7 @@ In terms of the HA, we have a single RDS instance. In a production environment i
 Before executing the Terraform file, please perform below two actions
 1. Create an IAM role to be used by terraform. The IAM role must contain the required permission in order to create the artefacts. Please update the IAM role in the tfvar file (aws_role)
 2. Create an S3 bucket that will contain the terraform state. The S3 bucket configuration can be found in the "terraform-config.tf" file
-
-Create a file with the required variables. Please note, it is higly reccomanded to create a tfvars file for each environment. In the below example I am adding a tfvar file only for the DEV environment.
+3. Create a file with the required variables. Please note; it is higly reccomanded to create a tfvars file for each environment. In the below example I am adding a tfvar file only for the DEV environment.
 
 ```bash
 $ cat ./environments/dev/terraform.dev.tfvars
