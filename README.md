@@ -100,7 +100,7 @@ $ terraform apply -var-file=./environments/dev/terraform.dev.tfvars
 ## Access the Wordpress application
 After terraform has completed, the Wordpress application can be access at the following url:
 
-"http://ALB/wp-admin/"
+http://ALB/wp-admin/
   
 The ALB value can be retrieve from the AWS console.
 
