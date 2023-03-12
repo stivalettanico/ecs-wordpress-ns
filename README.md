@@ -36,15 +36,18 @@ In terms of the HA, we have a single RDS instance. In a production environment i
 
 ## Run terraform command with var-file
 
+Before executing the Terraform file, please perform below two actions
+1. Create an IAM role to be used by terraform. The IAM role must contain the required permission in order to create the artefacts. Please update the IAM role in the tfvar file (aws_role)
+2. Create an S3 bucket that will contain the terraform state. The S3 bucket configuration can be found in the "terraform-config.tf" file
+
 Create a file with the required variables. Please note, it is higly reccomanded to create a tfvars file for each environment. In the below example I am adding a tfvar file only for the DEV environment.
 
 ```bash
-$ cat environments/dev/terraform.dev.tfvars
+$ cat ./environments/dev/terraform.dev.tfvars
 
 ################################################################################
 # Root
 ################################################################################
-//current_env                 = terraform.workspace
 aws_target_region           = "eu-west-2"
 project_name                = "wordpress"
 aws_account_id              = "<00000000000000>"
@@ -87,9 +90,12 @@ volume_name                 = "wordpress_volume"
 container_port              = 8080
 image_name                  = "bitnami/wordpress"
 container_path              = "/bitnami/wordpress"
-task_number                 = 4
+task_number                 = 2
 
-$ terraform plan -var-file=config/dev.tfvars
+$ terraform workspace new dev
+$ terraform init
+$ terraform plan -var-file=./environments/dev/terraform.dev.tfvars
+$ terraform apply -var-file=./environments/dev/terraform.dev.tfvars
 ```
 
 # Terraform structure
