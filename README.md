@@ -1,7 +1,7 @@
 # Deploy wordpress into ECS Fargate with Terraform
 The idea behind this project came from the need to build a simple Wordpress application in just few simple steps without the need to manage how much capacity in terms of computation I needed and ideally, by using microservices.
 
-At that time when I started this mini project I was already familiar with AWS, adn I was also studying to get my first AWS certificate but I never had the chance to work with microservices. So I sayd to myself, why don't you build a simple Wordpress application by using ECS? 
+At that time when I started this mini project I was already familiar with AWS, and I was also studying to get my first AWS certificate but I never had the chance to work with microservices. So I said to myself, why don't you build a simple Wordpress application by using ECS? 
 
 Amazon ECS is a fully managed container orchestration service that makes it easy for you to deploy, manage, and scale containerized applications. 
 For more info:
