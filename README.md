@@ -34,6 +34,62 @@ In a production environment, ECS and DB should be deployed in a dedicated and se
 Segregationg the subnets and the workload is required in order to adhere to the principals of zero trust and the AWS well architected framework. 
 In terms of the HA, we have a single RDS instance. In a production environment is strongly advised to deploy the DB in multiple AZs and ideally, one or more read only replica so that the load can be evenly distributed.
 
+## Run terraform command with var-file
+
+```bash
+$ cat config/dev.tfvars
+
+################################################################################
+# Root
+################################################################################
+//current_env                 = terraform.workspace
+aws_target_region           = "eu-west-2"
+project_name                = "wordpress"
+aws_account_id              = "<00000000000000>"
+aws_role                    = "deploy-terraform-role"
+account_name                = "<myaccount_name>"
+
+################################################################################
+# network module
+################################################################################
+vpc_cidr_range              = "10.0.0.0/16"
+public_subnet_cidr_range    = ["10.0.0.0/24", "10.0.1.0/24"]
+private_subnet_cidr_range   = ["10.0.2.0/24", "10.0.3.0/24"]
+alb_port                    = 80
+alb_target_type             = "ip"
+alb_protocol                = "HTTP"  
+alb_health_check_port       = 8080
+
+################################################################################
+# data module
+################################################################################
+db_port                     = 3306
+db_allocated_storage        = 20
+db_name                     = "wordpress"
+db_engine                   = "mysql"
+db_engine_version           = "5.7"
+db_instance_class           = "db.t3.micro"
+db_username                 = "admin"
+db_password                 = "password"
+efs_creation_token          = "efs-wordpress"
+efs_encrypted               = true
+efs_throughput_mode         = "bursting"
+efs_performance_mode        = "generalPurpose"  
+efs_path                    = "/bitnami"
+
+################################################################################
+# ecs-cluster module
+################################################################################
+container_name              = "wordpress"
+volume_name                 = "wordpress_volume"
+container_port              = 8080
+image_name                  = "bitnami/wordpress"
+container_path              = "/bitnami/wordpress"
+task_number                 = 4
+
+$ terraform plan -var-file=config/dev.tfvars
+```
+
 # Terraform structure
 
 
