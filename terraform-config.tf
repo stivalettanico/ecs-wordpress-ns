@@ -10,7 +10,7 @@ terraform {
   }
   
   backend "s3" {
-    bucket               = "ns-terraform-state-files"
+    bucket               = "terraform-state-files"
     workspace_key_prefix = "eu-west-2/wordpress"
     key                  = "aws.tfstate"
     region               = "eu-west-2"
