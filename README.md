@@ -31,7 +31,8 @@ In terms of architecture, the application is a classic 3 tiers application where
 
 For this project, I kept things simple since both the ECS cluster and the DB share the same private subnets in multi AZs way. 
 In a production environment, ECS and DB should be deployed in a dedicated and separate subnets with the NACL in place that will allow only the required traffic between the two subnets.  
-Segregationg the subnets and the workload is required in order to adhere to the principals of zero trust and the AWS well architected framework. 
+
+Segregating the subnets and the workload is required in order to adhere to the principals of zero trust and the AWS well architected framework. 
 In terms of the HA, we have a single RDS instance. In a production environment is strongly advised to deploy the DB in multiple AZs and ideally, one or more read only replica so that the load can be evenly distributed.
 
 ## Run terraform command with var-file
