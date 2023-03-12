@@ -36,8 +36,10 @@ In terms of the HA, we have a single RDS instance. In a production environment i
 
 ## Run terraform command with var-file
 
+Create a file with the required variables. Please note, it is higly reccomanded to create a tfvars file for each environment. In the below example I am adding a tfvar file only for the DEV environment.
+
 ```bash
-$ cat config/dev.tfvars
+$ cat environments/dev/terraform.dev.tfvars
 
 ################################################################################
 # Root
